@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An Interactive Guide to Exchange-Traded Funds (ETFs)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Slate Blue -->
+    <!-- Application Structure Plan: A single-page, smooth-scrolling application with a sticky navigation bar. The structure is designed for intuitive exploration, starting with the basics ("What is an ETF?"), moving to comparisons ("The Showdown"), then diving into mechanics ("How It Works"), exploring options ("The Universe"), and finally providing practical steps ("Build a Portfolio" & "Getting Started"). This task-oriented flow is more user-friendly than the report's linear structure, allowing users to jump directly to what interests them. Interactive elements like toggles, clickable diagrams, and dynamic charts are used to simplify complex topics and keep users engaged. -->
+    <!-- Visualization & Content Choices: 
+        - ETF Growth (Report Info) -> Goal: Inform -> Viz: Line Chart (Chart.js) -> Interaction: Static -> Justification: Clearly shows dramatic growth over time.
+        - Core Concept (Report Info) -> Goal: Explain -> Viz: HTML/CSS Diagram -> Interaction: Hover highlights -> Justification: Visually represents the "basket" analogy without images.
+        - Comparisons (Report Info) -> Goal: Compare -> Viz: Toggled content cards & Bar Chart -> Interaction: Buttons to switch views -> Justification: Allows direct, side-by-side comparison of features and costs, which is more engaging than a static table. The bar chart makes the cost difference stark.
+        - Creation/Redemption (Report Info) -> Goal: Explain Process -> Viz: Step-by-step HTML/CSS flowchart -> Interaction: Next/Prev buttons -> Justification: Breaks down a complex mechanism into manageable, sequential steps.
+        - ETF Types (Report Info) -> Goal: Organize -> Viz: Interactive card gallery -> Interaction: Click to reveal details -> Justification: A visually appealing way to browse different categories.
+        - Sample Portfolios (Report Info) -> Goal: Inform/Compare -> Viz: Donut Charts -> Interaction: Buttons to switch profiles -> Justification: Donut charts perfectly illustrate asset allocation. Interaction makes comparing risk profiles simple and clear.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 600px;
+            height: 300px;
+            max-height: 40vh;
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #3b82f6; /* blue-500 */
+        }
+        .active-nav {
+             color: #3b82f6; /* blue-500 */
+             font-weight: 600;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .card-shadow-hover:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .process-step {
+            transition: all 0.3s ease-in-out;
+            border-color: #e2e8f0; /* slate-200 */
+        }
+        .process-step.active {
+            border-color: #3b82f6; /* blue-500 */
+            transform: scale(1.05);
+            background-color: #eff6ff; /* blue-50 */
+        }
+        .comparison-btn.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-slate-900">ETF Guide</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Introduction</a>
+                        <a href="#showdown" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Comparison</a>
+                        <a href="#mechanics" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">How It Works</a>
+                        <a href="#universe" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Universe</a>
+                        <a href="#portfolio" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600">Portfolio Builder</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Section 1: Hero -->
+        <section id="intro" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-slate-900">An Interactive Guide to ETFs</h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-slate-600">
+                    ETFs have transformed investing. This guide breaks down what they are, how they work, and how you can use them to build wealth, all in a simple, visual, and interactive way.
+                </p>
+                <div class="mt-10">
+                    <h2 class="text-2xl font-bold text-slate-800">A Trillion Dollar Revolution</h2>
+                    <p class="mt-2 text-slate-600">U.S. ETF assets have exploded, making them a cornerstone of modern portfolios.</p>
+                    <div class="chart-container mt-6">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 1.5: What is an ETF -->
+        <section id="what-is-an-etf" class="py-16 bg-white">
+             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">What Exactly Is an ETF?</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
+                        Think of an ETF as a single "shopping cart" you can buy on the stock market. Instead of buying individual items, you buy the whole cart at once, and it's already filled with a diverse basket of investments.
+                    </p>
+                </div>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                    <div class="w-full md:w-1/2">
+                         <h3 class="text-2xl font-semibold mb-4 text-slate-800">The "Basket of Securities"</h3>
+                         <p class="text-slate-600 mb-6">
+                            When you buy one share of an ETF, you're buying a small piece of all the assets it holds. For example, an S&P 500 ETF contains stocks from 500 of the largest U.S. companies. This single purchase gives you instant diversification, which is a key principle of smart investing. It's the best of both worlds: the diversification of a mutual fund with the easy, all-day trading of a stock.
+                         </p>
+                    </div>
+                    <div class="w-full md:w-1/2 flex items-center justify-center">
+                         <div class="p-6 bg-slate-100 rounded-xl border-2 border-slate-200 w-full max-w-md text-center">
+                             <h4 class="font-bold text-lg mb-4">One Share of "Market ETF"</h4>
+                             <div class="grid grid-cols-3 gap-3">
+                                 <div class="bg-white p-3 rounded-lg card-shadow">📈 Stock A</div>
+                                 <div class="bg-white p-3 rounded-lg card-shadow">🏢 Stock B</div>
+                                 <div class="bg-white p-3 rounded-lg card-shadow">🏦 Stock C</div>
+                                 <div class="bg-white p-3 rounded-lg card-shadow">💊 Stock D</div>
+                                 <div class="bg-white p-3 rounded-lg card-shadow">...and hundreds more</div>
+                                 <div class="bg-white p-3 rounded-lg card-shadow">📜 Bond X</div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+        <!-- Section 2: Showdown -->
+        <section id="showdown" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">The Investment Showdown</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">How do ETFs stack up against other common investments? Select a comparison to see the key differences.</p>
+                </div>
+                <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                    <button data-comparison="etf-vs-mutual" class="comparison-btn px-4 py-2 text-sm md:text-base font-semibold rounded-full border border-slate-300 transition-colors duration-200">ETF vs. Mutual Fund</button>
+                    <button data-comparison="etf-vs-stock" class="comparison-btn px-4 py-2 text-sm md:text-base font-semibold rounded-full border border-slate-300 transition-colors duration-200">ETF vs. Stock</button>
+                    <button data-comparison="pros-vs-cons" class="comparison-btn px-4 py-2 text-sm md:text-base font-semibold rounded-full border border-slate-300 transition-colors duration-200">Pros vs. Cons</button>
+                </div>
+                
+                <div id="comparison-content" class="mt-8">
+                    <!-- Content will be injected here by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Mechanics -->
+        <section id="mechanics" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">How ETFs Actually Work</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">Behind the scenes, a unique process called "creation and redemption" keeps ETF prices fair and costs low. It's the engine that powers the ETF. Use the buttons below to walk through this fascinating process.</p>
+                </div>
+
+                <div id="process-flow" class="relative">
+                    <div id="process-steps-container" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+                        <!-- Steps injected by JS -->
+                    </div>
+                </div>
+                <div class="flex justify-center mt-8 space-x-4">
+                    <button id="prev-step" class="px-6 py-2 bg-slate-200 text-slate-800 font-semibold rounded-full transition hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                    <button id="next-step" class="px-6 py-2 bg-blue-500 text-white font-semibold rounded-full transition hover:bg-blue-600 disabled:opacity-50">Next</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 4: Universe -->
+        <section id="universe" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Explore the ETF Universe</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">The "ETF" label covers a vast range of funds, from broad and stable to narrow and speculative. Click on a category to learn more.</p>
+                </div>
+                <div id="universe-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Universe cards will be injected here by JS -->
+                </div>
+                 <div class="mt-12 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 rounded-r-lg">
+                    <h4 class="font-bold">A Word of Caution</h4>
+                    <p>Some ETFs, like Leveraged or Inverse funds, are complex tools for short-term traders, not for long-term investors. Always understand what's inside an ETF before you invest.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Portfolio -->
+        <section id="portfolio" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Build a Sample Portfolio</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Building a diversified portfolio can be simple. Select an investor profile below to see an example of how a few broad ETFs can form a solid foundation.</p>
+                </div>
+                <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                    <button data-profile="conservative" class="portfolio-btn px-4 py-2 text-sm md:text-base font-semibold rounded-full border border-slate-300 transition-colors duration-200">Conservative</button>
+                    <button data-profile="balanced" class="portfolio-btn px-4 py-2 text-sm md:text-base font-semibold rounded-full border border-slate-300 transition-colors duration-200">Balanced</button>
+                    <button data-profile="aggressive" class="portfolio-btn px-4 py-2 text-sm md:text-base font-semibold rounded-full border border-slate-300 transition-colors duration-200">Aggressive</button>
+                </div>
+                
+                <div class="bg-slate-50 p-8 rounded-xl border border-slate-200">
+                    <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+                        <div id="portfolio-description">
+                            <!-- Portfolio text injected here -->
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="chart-container h-[250px] md:h-[300px] max-w-[300px]">
+                                <canvas id="portfolioChart"></canvas>
+                            </div>
+                            <div id="portfolio-legend" class="mt-4 text-center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 6: Getting Started -->
+        <section id="getting-started" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Your First Steps to Investing</h2>
+                     <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Ready to begin? Investing in ETFs is a straightforward process.</p>
+                </div>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                    <div class="p-6">
+                        <div class="flex items-center justify-center h-16 w-16 mx-auto bg-blue-100 text-blue-600 rounded-full text-2xl font-bold">1</div>
+                        <h3 class="mt-6 font-semibold text-lg">Define Your Goals</h3>
+                        <p class="mt-2 text-slate-600">Determine your time horizon and risk tolerance. This shapes your entire strategy.</p>
+                    </div>
+                     <div class="p-6">
+                        <div class="flex items-center justify-center h-16 w-16 mx-auto bg-blue-100 text-blue-600 rounded-full text-2xl font-bold">2</div>
+                        <h3 class="mt-6 font-semibold text-lg">Open an Account</h3>
+                        <p class="mt-2 text-slate-600">Choose a reputable brokerage firm. Many offer no-minimum, commission-free ETF trading.</p>
+                    </div>
+                     <div class="p-6">
+                        <div class="flex items-center justify-center h-16 w-16 mx-auto bg-blue-100 text-blue-600 rounded-full text-2xl font-bold">3</div>
+                        <h3 class="mt-6 font-semibold text-lg">Select Your ETFs</h3>
+                        <p class="mt-2 text-slate-600">Research funds that match your goals. Focus on low expense ratios and broad diversification.</p>
+                    </div>
+                     <div class="p-6">
+                        <div class="flex items-center justify-center h-16 w-16 mx-auto bg-blue-100 text-blue-600 rounded-full text-2xl font-bold">4</div>
+                        <h3 class="mt-6 font-semibold text-lg">Place Your Trade</h3>
+                        <p class="mt-2 text-slate-600">Enter the ETF's ticker, the amount, and choose an order type (limit orders are great for beginners).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>This interactive guide is for informational purposes only and does not constitute financial advice.</p>
+            <p class="text-sm mt-2 text-slate-400">&copy; 2025 Interactive ETF Guide. All rights reserved.</p>
+        </div>
+    </footer>
+    
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const appData = {
+        comparisons: {
+            'etf-vs-mutual': {
+                title: 'ETF vs. Mutual Fund',
+                chart: {
+                    type: 'bar',
+                    labels: ['Average Passive ETF', 'Average Active Mutual Fund'],
+                    data: [0.11, 0.59],
+                    title: 'Average Annual Expense Ratios (%)'
+                },
+                points: [
+                    { a: 'Traded all day on stock exchanges at live prices.', b: 'Traded only once per day after market close.' },
+                    { a: 'Generally lower expense ratios and no sales loads.', b: 'Often higher fees and may include sales commissions.' },
+                    { a: 'Highly tax-efficient due to its structure.', b: 'Can create tax bills from internal trading.' },
+                    { a: 'Minimum investment is just one share.', b: 'Often requires a high minimum investment (e.g., $1,000+).' },
+                ]
+            },
+            'etf-vs-stock': {
+                title: 'ETF vs. Individual Stock',
+                points: [
+                    { a: 'Instant diversification by holding many stocks.', b: 'Concentrated risk in a single company.' },
+                    { a: 'Low-cost way to own a pre-built portfolio.', b: 'Building a diverse portfolio is expensive and time-consuming.' },
+                    { a: 'Matches the market average performance by design.', b: 'Offers potential for spectacular (or disastrous) returns.' },
+                    { a: 'Passive management requires minimal research from you.', b: 'Requires significant research to pick winning stocks.' },
+                ]
+            },
+            'pros-vs-cons': {
+                title: 'Advantages vs. Disadvantages of ETFs',
+                points: [
+                    { a: 'Instant Diversification: Spreads risk easily.', b: 'Transaction Costs: A bid-ask spread applies to every trade.' },
+                    { a: 'Low Costs: Typically very low annual fees.', b: 'Over-Trading Temptation: Easy trading can lead to bad decisions.' },
+                    { a: 'Trading Flexibility: Buy or sell anytime the market is open.', b: 'Concentration Risk: Niche ETFs can be as risky as a single stock.' },
+                    { a: 'Transparency: Holdings are disclosed daily.', b: 'Tracking Error: Performance may not perfectly match the index.' },
+                ]
+            }
+        },
+        mechanics: [
+            { title: '1. Investor Demand', text: 'On the stock exchange (the "retail" market), more investors want to buy an ETF than sell it. This pushes the ETF\'s market price slightly above the value of its underlying assets.' },
+            { title: '2. AP Sees Opportunity', text: 'An "Authorized Participant" (AP), a large financial firm, sees this price difference (arbitrage). They decide to create more ETF shares to meet demand and capture a small, risk-free profit.' },
+            { title: '3. AP Buys Assets', text: 'The AP goes into the stock market and buys the actual stocks/bonds that the ETF holds, in the exact proportions required by the fund. This is the "basket of securities."' },
+            { title: '4. The "In-Kind" Exchange', text: 'The AP delivers this basket of securities to the ETF provider. In return, the provider gives the AP a large block of new ETF shares (a "creation unit"). This is a key step, as it\'s a swap of assets, not cash, which is very tax-efficient.' },
+            { title: '5. Supply Increases', text: 'The AP sells the newly created ETF shares on the stock exchange to the investors who wanted them. This increased supply pushes the ETF\'s price back down, aligning it with the value of its assets. The reverse process ("redemption") happens when there is more selling pressure.' },
+        ],
+        universe: [
+            { title: 'Broad Market ETFs', text: 'The core of most portfolios. These track major indexes like the S&P 500 or the total U.S. stock market, offering maximum diversification. Ex: VTI, SPY.'},
+            { title: 'Bond ETFs', text: 'Provide exposure to fixed-income assets like government or corporate bonds. Used for stability and income generation. Ex: AGG, BND.'},
+            { title: 'Sector & Industry ETFs', text: 'Focus on specific slices of the economy, like Technology (XLK), Health Care (XLV), or Financials (XLF). Less diversified than broad market funds.'},
+            { title: 'International ETFs', text: 'Invest in companies outside the U.S., providing crucial geographic diversification. Can be broad (VXUS) or target specific regions (EFA).'},
+            { title: 'Thematic ETFs', text: 'Target long-term trends that span across sectors, such as Clean Energy (ICLN) or Robotics (ROBO). Often speculative and concentrated.'},
+            { title: 'Commodity & Other ETFs', text: 'Track the price of raw materials like Gold (GLD) or Oil (USO), or other assets like currencies. Used for specific portfolio goals.'}
+        ],
+        portfolios: {
+            conservative: {
+                title: 'Conservative Investor',
+                description: 'Suitable for someone with a short time horizon or low risk tolerance. The primary goal is preserving capital, with a secondary goal of modest growth.',
+                labels: ['Stocks', 'Bonds'],
+                data: [40, 60],
+                samples: '40% U.S. Total Stock Market ETF, 60% U.S. Total Bond Market ETF.'
+            },
+            balanced: {
+                title: 'Balanced Investor',
+                description: 'A middle-of-the-road approach for those with a medium-term horizon. Seeks a balance between growth from stocks and stability from bonds.',
+                labels: ['Stocks', 'Bonds'],
+                data: [60, 40],
+                samples: '60% Global Stock Market ETF, 40% U.S. Total Bond Market ETF.'
+            },
+            aggressive: {
+                title: 'Aggressive Investor',
+                description: 'Designed for a younger investor with a long time horizon and high tolerance for volatility. The primary goal is maximizing long-term growth.',
+                labels: ['Stocks', 'Bonds'],
+                data: [80, 20],
+                samples: '80% Global Stock Market ETF, 20% U.S. Total Bond Market ETF.'
+            }
+        }
+    };
+
+    let growthChart, portfolioChart, comparisonChart;
+
+    const createGrowthChart = () => {
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['2000', '2024'],
+                datasets: [{
+                    label: 'U.S. ETF Assets Under Management',
+                    data: [100, 8100],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `$${context.raw.toLocaleString()} Billion`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: (value) => `$${(value/1000).toFixed(1)}T`
+                        }
+                    }
+                }
+            }
+        });
+    };
+    
+    const comparisonButtons = document.querySelectorAll('.comparison-btn');
+    const comparisonContentEl = document.getElementById('comparison-content');
+    
+    function renderComparison(type) {
+        const content = appData.comparisons[type];
+        if (!content) return;
+
+        let pointsHtml = content.points.map(p => `
+            <div class="grid grid-cols-2 gap-4 items-start text-sm">
+                <div class="p-3 bg-green-50 rounded-lg text-green-800">${p.a}</div>
+                <div class="p-3 bg-red-50 rounded-lg text-red-800">${p.b ? p.b : ''}</div>
+            </div>
+        `).join('');
+
+        let chartHtml = '';
+        if (content.chart) {
+            chartHtml = `<div class="mt-8">
+                <h4 class="text-center font-semibold mb-4">${content.chart.title}</h4>
+                <div class="chart-container h-64"><canvas id="comparisonChart"></canvas></div>
+            </div>`;
+        }
+
+        let headers = content.title.split(' vs. ');
+        let headerHtml = `
+            <div class="grid grid-cols-2 gap-4 items-start mb-4">
+                <h3 class="text-lg font-bold text-green-700 text-center">${headers[0]}</h3>
+                <h3 class="text-lg font-bold text-red-700 text-center">${headers[1]}</h3>
+            </div>
+        `;
+        if (headers.length < 2) {
+             headerHtml = `<h3 class="text-xl font-bold text-slate-800 text-center mb-4">${content.title}</h3>`
+        }
+
+
+        comparisonContentEl.innerHTML = `
+            <div class="bg-white p-6 rounded-xl border border-slate-200 max-w-4xl mx-auto">
+                ${headerHtml}
+                <div class="space-y-3">
+                   ${pointsHtml}
+                </div>
+                ${chartHtml}
+            </div>
+        `;
+
+        if (content.chart) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            if (comparisonChart) comparisonChart.destroy();
+            comparisonChart = new Chart(ctx, {
+                type: content.chart.type,
+                data: {
+                    labels: content.chart.labels,
+                    datasets: [{
+                        data: content.chart.data,
+                        backgroundColor: ['#34d399', '#f87171'],
+                        borderColor: ['#059669', '#dc2626'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                     scales: { x: { beginAtZero: true } }
+                }
+            });
+        }
+    }
+
+    comparisonButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            comparisonButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderComparison(btn.dataset.comparison);
+        });
+    });
+
+    let currentProcessStep = 0;
+    const processStepsContainer = document.getElementById('process-steps-container');
+    const prevStepBtn = document.getElementById('prev-step');
+    const nextStepBtn = document.getElementById('next-step');
+
+    function renderProcessSteps() {
+        processStepsContainer.innerHTML = appData.mechanics.map((step, index) => `
+            <div class="process-step border-2 rounded-xl p-4 md:p-6 h-full ${index === currentProcessStep ? 'active' : 'opacity-60'}">
+                <h4 class="font-bold text-lg text-slate-800">${step.title}</h4>
+                <p class="mt-2 text-sm text-slate-600">${step.text}</p>
+            </div>
+        `).join('');
+    }
+    
+    function updateStepButtons() {
+        prevStepBtn.disabled = currentProcessStep === 0;
+        nextStepBtn.disabled = currentProcessStep === appData.mechanics.length - 1;
+        if(nextStepBtn.disabled) nextStepBtn.innerText = "Process Complete!"
+        else nextStepBtn.innerText = "Next"
+    }
+    
+    nextStepBtn.addEventListener('click', () => {
+        if (currentProcessStep < appData.mechanics.length - 1) {
+            currentProcessStep++;
+            renderProcessSteps();
+            updateStepButtons();
+        }
+    });
+
+    prevStepBtn.addEventListener('click', () => {
+        if (currentProcessStep > 0) {
+            currentProcessStep--;
+            renderProcessSteps();
+            updateStepButtons();
+        }
+    });
+    
+    const universeGrid = document.getElementById('universe-grid');
+    appData.universe.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-6 rounded-xl border border-slate-200 cursor-pointer transition-transform transform hover:-translate-y-1 card-shadow-hover';
+        card.innerHTML = `
+            <h3 class="font-semibold text-xl text-slate-800">${item.title}</h3>
+            <p class="text-slate-600 mt-2 text-sm hidden">${item.text}</p>
+        `;
+        card.addEventListener('click', () => {
+            card.querySelector('p').classList.toggle('hidden');
+        });
+        universeGrid.appendChild(card);
+    });
+
+    const portfolioButtons = document.querySelectorAll('.portfolio-btn');
+    const portfolioDescEl = document.getElementById('portfolio-description');
+    const portfolioLegendEl = document.getElementById('portfolio-legend');
+
+    const createPortfolioChart = () => {
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        portfolioChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ['#3b82f6', '#64748b'],
+                    borderColor: '#f1f5f9',
+                    borderWidth: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.raw}%`
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    function renderPortfolio(profile) {
+        const data = appData.portfolios[profile];
+        if (!data) return;
+
+        portfolioDescEl.innerHTML = `
+            <h3 class="text-2xl font-bold text-slate-900">${data.title}</h3>
+            <p class="mt-4 text-slate-600">${data.description}</p>
+            <div class="mt-6 bg-blue-100 p-4 rounded-lg">
+                <p class="font-semibold text-blue-800">Sample Holdings:</p>
+                <p class="text-sm text-blue-700">${data.samples}</p>
+            </div>
+        `;
+
+        if (portfolioChart) {
+            portfolioChart.data.labels = data.labels;
+            portfolioChart.data.datasets[0].data = data.data;
+            portfolioChart.update();
+        }
+
+        portfolioLegendEl.innerHTML = `
+             <div class="flex justify-center space-x-6">
+                <span class="flex items-center text-sm"><span class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>Stocks: ${data.data[0]}%</span>
+                <span class="flex items-center text-sm"><span class="h-3 w-3 rounded-full bg-slate-500 mr-2"></span>Bonds: ${data.data[1]}%</span>
+            </div>
+        `;
+    }
+
+    portfolioButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            portfolioButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderPortfolio(btn.dataset.profile);
+        });
+    });
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('main section');
+    const headerHeight = document.getElementById('header').offsetHeight;
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - headerHeight - 20;
+            if (pageYOffset >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active-nav');
+            if (link.getAttribute('href').substring(1) === current) {
+                link.classList.add('active-nav');
+            }
+        });
+    });
+
+    function init() {
+        createGrowthChart();
+        createPortfolioChart();
+
+        comparisonButtons[0].click();
+        
+        renderProcessSteps();
+        updateStepButtons();
+        
+        portfolioButtons[1].click();
+    }
+    
+    init();
+});
+</script>
+</body>
+</html>
